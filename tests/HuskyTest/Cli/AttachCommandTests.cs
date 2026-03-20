@@ -184,27 +184,22 @@ public class AttachCommandTests
       // Assert
       _xmlIo.Received(1).Save(Arg.Any<string>(), Arg.Any<XElement>());
 
-      // Verify HuskyRoot property has the correct relative path with trailing slash
       var expectedHuskyRoot = string.Join("/", relativePath) + "/";
-      var huskyRoot = _xmlDoc.Descendants("PropertyGroup")
-         .SelectMany(pg => pg.Descendants("HuskyRoot"))
-         .FirstOrDefault();
-      huskyRoot.Should().NotBeNull();
-      huskyRoot!.Value.Should().Be(expectedHuskyRoot);
+      var expected = XElement.Parse(
+         $$"""
+         <Project Sdk="Microsoft.NET.Sdk">
+           <PropertyGroup><TargetFramework>netcoreapp2.1</TargetFramework></PropertyGroup>
+           <PropertyGroup><HuskyRoot Condition="'$(HuskyRoot)' == ''">{{expectedHuskyRoot}}</HuskyRoot></PropertyGroup>
+           <Target Name="Husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0"
+                   Inputs="$(HuskyRoot).config/dotnet-tools.json" Outputs="$(HuskyRoot).husky/_/install.stamp">
+             <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
+             <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="$(HuskyRoot)" />
+             <Touch Files="$(HuskyRoot).husky/_/install.stamp" AlwaysCreate="true" Condition="Exists('$(HuskyRoot).husky/_')" />
+             <ItemGroup><FileWrites Include="$(HuskyRoot).husky/_/install.stamp" /></ItemGroup>
+           </Target>
+         </Project>
+         """);
 
-      // Verify Target uses $(HuskyRoot) references, not literal paths
-      var huskyTarget = _xmlDoc.Descendants("Target")
-         .FirstOrDefault(q => q.Attribute("Name")?.Value == "Husky");
-      huskyTarget.Should().NotBeNull();
-
-      var exec = huskyTarget!.Descendants("Exec")
-         .FirstOrDefault(q => q.Attribute("Command")?.Value.Contains("dotnet husky install") == true);
-      exec.Should().NotBeNull();
-      exec!.Attribute("WorkingDirectory")?.Value.Should().Be("$(HuskyRoot)");
-
-      huskyTarget.Attribute("Inputs")?.Value.Should().Be("$(HuskyRoot).config/dotnet-tools.json");
-      huskyTarget.Attribute("Outputs")?.Value.Should().Be("$(HuskyRoot).husky/_/install.stamp");
-      huskyTarget.Descendants("Touch").First().Attribute("Files")?.Value.Should().Be("$(HuskyRoot).husky/_/install.stamp");
-      huskyTarget.Descendants("ItemGroup").Descendants("FileWrites").First().Attribute("Include")?.Value.Should().Be("$(HuskyRoot).husky/_/install.stamp");
+      _xmlDoc.ToString().Should().Be(expected.ToString());
    }
 }
