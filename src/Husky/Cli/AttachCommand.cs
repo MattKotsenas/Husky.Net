@@ -48,29 +48,49 @@ public class AttachCommand : CommandBase
 
       // If husky target tag exists, remove it
       if (huskyTarget != null && Force)
+      {
          huskyTarget.Remove();
+         // Also remove existing HuskyRoot PropertyGroup to avoid duplicates
+         doc.Descendants("PropertyGroup")
+            .FirstOrDefault(pg => pg.Descendants("HuskyRoot").Any())
+            ?.Remove();
+      }
 
       // create husky target
       var condition = GetCondition(doc);
       var rootRelativePath = await GetRelativePath(filepath);
-      var target = GetTarget(condition, rootRelativePath);
+      var propertyGroup = GetHuskyRootPropertyGroup(rootRelativePath);
+      var target = GetTarget(condition);
+      doc.Add(propertyGroup);
       doc.Add(target);
       _xmlIo.Save(filepath, doc);
 
       "Husky dev-dependency successfully attached to this project.".Log(ConsoleColor.Green);
    }
 
-   private XElement GetTarget(string condition, string rootRelativePath)
+   private XElement GetHuskyRootPropertyGroup(string rootRelativePath)
    {
-      var sentinelPath = Path.Combine(rootRelativePath, ".husky", "_", "install.stamp");
-      var inputPath = Path.Combine(rootRelativePath, ".config", "dotnet-tools.json");
+      // Normalize to forward slashes and ensure trailing slash for MSBuild string concatenation
+      var huskyRoot = rootRelativePath
+         .Replace(Path.DirectorySeparatorChar, '/')
+         .TrimEnd('/')
+         + "/";
 
+      var propertyGroup = new XElement("PropertyGroup");
+      var huskyRootElement = new XElement("HuskyRoot", huskyRoot);
+      huskyRootElement.SetAttributeValue("Condition", "'$(HuskyRoot)' == ''");
+      propertyGroup.Add(huskyRootElement);
+      return propertyGroup;
+   }
+
+   private XElement GetTarget(string condition)
+   {
       var target = new XElement("Target");
       target.SetAttributeValue("Name", "Husky");
       target.SetAttributeValue("AfterTargets", "Restore");
       target.SetAttributeValue("Condition", condition);
-      target.SetAttributeValue("Inputs", inputPath);
-      target.SetAttributeValue("Outputs", sentinelPath);
+      target.SetAttributeValue("Inputs", "$(HuskyRoot).config/dotnet-tools.json");
+      target.SetAttributeValue("Outputs", "$(HuskyRoot).husky/_/install.stamp");
       var exec = new XElement("Exec");
       exec.SetAttributeValue("Command", "dotnet tool restore");
       exec.SetAttributeValue("StandardOutputImportance", "Low");
@@ -80,19 +100,18 @@ public class AttachCommand : CommandBase
       exec.SetAttributeValue("Command", GetInstallCommand());
       exec.SetAttributeValue("StandardOutputImportance", "Low");
       exec.SetAttributeValue("StandardErrorImportance", "High");
-      exec.SetAttributeValue("WorkingDirectory", rootRelativePath);
+      exec.SetAttributeValue("WorkingDirectory", "$(HuskyRoot)");
       target.Add(exec);
 
-      var huskyDir = Path.Combine(rootRelativePath, ".husky", "_");
       var touch = new XElement("Touch");
-      touch.SetAttributeValue("Files", sentinelPath);
+      touch.SetAttributeValue("Files", "$(HuskyRoot).husky/_/install.stamp");
       touch.SetAttributeValue("AlwaysCreate", "true");
-      touch.SetAttributeValue("Condition", $"Exists('{huskyDir}')");
+      touch.SetAttributeValue("Condition", "Exists('$(HuskyRoot).husky/_')");
       target.Add(touch);
 
       var itemGroup = new XElement("ItemGroup");
       var fileWrites = new XElement("FileWrites");
-      fileWrites.SetAttributeValue("Include", sentinelPath);
+      fileWrites.SetAttributeValue("Include", "$(HuskyRoot).husky/_/install.stamp");
       itemGroup.Add(fileWrites);
       target.Add(itemGroup);
 
