@@ -52,7 +52,7 @@ The target uses MSBuild incremental build support (`Inputs`/`Outputs`) to avoid 
 :::
 
 ::: tip
-For solutions with multiple projects, consider placing the target in a `Directory.Build.targets` file at the repository root. When placed at the root, set `HuskyRoot` to `$(MSBuildThisFileDirectory)` and all paths resolve automatically with no manual configuration. Do not use `Directory.Build.props` for this - targets belong in `.targets` files.
+For solutions with multiple projects, consider placing the target in a `Directory.Build.targets` file at the repository root. When placed at the root, set `HuskyRoot` to `$(MSBuildThisFileDirectory)` and all paths resolve automatically with no manual configuration. Do not use `Directory.Build.props` for this; targets belong in `.targets` files.
 :::
 
 ::: warning
