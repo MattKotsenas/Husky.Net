@@ -35,6 +35,7 @@ The generated block will look something like this, If you're attaching husky man
 
 ```xml:no-line-numbers:no-v-pre
 <PropertyGroup>
+   <!-- Update this to the relative path from your project to the repo root -->
    <HuskyRoot Condition="'$(HuskyRoot)' == ''">../../</HuskyRoot>
 </PropertyGroup>
 <Target Name="husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0  and '$(IgnoreSubmodule)' != 0"

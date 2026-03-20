@@ -26,6 +26,7 @@ To manually attach husky to your project, add the below code to one of your proj
 
 ``` xml:no-line-numbers:no-v-pre
 <PropertyGroup>
+   <!-- Update this to the relative path from your project to the repo root -->
    <HuskyRoot Condition="'$(HuskyRoot)' == ''">../../</HuskyRoot>
 </PropertyGroup>
 <Target Name="husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0"
