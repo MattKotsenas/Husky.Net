@@ -91,9 +91,7 @@ public class AttachCommand : CommandBase
       var target = new XElement("Target");
       target.SetAttributeValue("Name", "Husky");
       target.SetAttributeValue("AfterTargets", "Restore");
-      target.SetAttributeValue("Condition", condition);
-      target.SetAttributeValue("Inputs", "$(HuskyRoot).config/dotnet-tools.json");
-      target.SetAttributeValue("Outputs", "$(HuskyRoot).husky/_/install.stamp");
+      target.SetAttributeValue("Condition", condition + " and !Exists('$(HuskyRoot).husky/_/install.stamp')");
       var exec = new XElement("Exec");
       exec.SetAttributeValue("Command", "dotnet tool restore");
       exec.SetAttributeValue("StandardOutputImportance", "Low");
