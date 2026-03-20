@@ -46,15 +46,15 @@ public class AttachCommand : CommandBase
          return;
       }
 
-      // If husky target tag exists, remove it
-      if (huskyTarget != null && Force)
-      {
-         huskyTarget.Remove();
-         // Also remove existing HuskyRoot PropertyGroup to avoid duplicates
-         doc.Descendants("PropertyGroup")
-            .FirstOrDefault(pg => pg.Descendants("HuskyRoot").Any())
-            ?.Remove();
-      }
+      // Remove existing husky elements to avoid duplicates
+      doc.Descendants("Target")
+         .Where(q => q.Attribute("Name")?.Value.Equals("Husky", StringComparison.InvariantCultureIgnoreCase) ?? false)
+         .ToList()
+         .ForEach(e => e.Remove());
+      doc.Descendants("PropertyGroup")
+         .Where(pg => pg.Descendants("HuskyRoot").Any())
+         .ToList()
+         .ForEach(e => e.Remove());
 
       // create husky target
       var condition = GetCondition(doc);
