@@ -57,19 +57,17 @@ public class AttachCommand : CommandBase
          .ForEach(e => e.Remove());
 
       // create husky target
-      var condition = GetCondition(doc);
-      var rootRelativePath = await GetRelativePath(filepath);
-      var propertyGroup = GetHuskyRootPropertyGroup(rootRelativePath);
-      var target = GetTarget(condition);
-      doc.Add(propertyGroup);
-      doc.Add(target);
+      await AddHuskyTarget(doc, filepath);
       _xmlIo.Save(filepath, doc);
 
       "Husky dev-dependency successfully attached to this project.".Log(ConsoleColor.Green);
    }
 
-   private XElement GetHuskyRootPropertyGroup(string rootRelativePath)
+   private async Task AddHuskyTarget(XContainer doc, string filepath)
    {
+      var condition = GetCondition(doc);
+      var rootRelativePath = await GetRelativePath(filepath);
+
       // Normalize to forward slashes and ensure trailing slash for MSBuild string concatenation
       var huskyRoot = rootRelativePath
          .Replace(Path.DirectorySeparatorChar, '/')
@@ -80,11 +78,8 @@ public class AttachCommand : CommandBase
       var huskyRootElement = new XElement("HuskyRoot", huskyRoot);
       huskyRootElement.SetAttributeValue("Condition", "'$(HuskyRoot)' == ''");
       propertyGroup.Add(huskyRootElement);
-      return propertyGroup;
-   }
+      doc.Add(propertyGroup);
 
-   private XElement GetTarget(string condition)
-   {
       var target = new XElement("Target");
       target.SetAttributeValue("Name", "Husky");
       target.SetAttributeValue("AfterTargets", "Restore");
@@ -115,7 +110,7 @@ public class AttachCommand : CommandBase
       itemGroup.Add(fileWrites);
       target.Add(itemGroup);
 
-      return target;
+      doc.Add(target);
    }
 
    private string GetInstallCommand()
