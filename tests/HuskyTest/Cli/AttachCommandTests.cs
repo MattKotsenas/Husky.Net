@@ -117,6 +117,27 @@ public class AttachCommandTests
    }
 
    [Fact]
+   public async Task Attach_WhenForceIsTrue_ShouldPreserveOtherPropertiesInPropertyGroup()
+   {
+      // Arrange - HuskyRoot shares a PropertyGroup with another property
+      _console = new FakeInMemoryConsole();
+      _xmlDoc.Add(new XElement("Target", new XAttribute("Name", "Husky")));
+      var sharedPg = new XElement("PropertyGroup",
+         new XElement("SomeOtherProperty", "value"),
+         new XElement("HuskyRoot", "../../"));
+      _xmlDoc.Add(sharedPg);
+      var command = new AttachCommand(_git, _io, _xmlIo) { FileName = _fileName, Force = true };
+
+      // Act
+      await command.ExecuteAsync(_console);
+
+      // Assert - SomeOtherProperty should survive, old HuskyRoot removed, new one added
+      _xmlDoc.Descendants("SomeOtherProperty").Should().HaveCount(1);
+      _xmlDoc.Descendants("HuskyRoot").Should().HaveCount(1);
+      _xmlIo.Received(1).Save(Arg.Any<string>(), Arg.Any<XElement>());
+   }
+
+   [Fact]
    public async Task Attach_WhenIgnoreSubmoduleIsTrue_ShouldAddSubmoduleTargetCondition()
    {
       // Arrange

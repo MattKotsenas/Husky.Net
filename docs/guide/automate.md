@@ -29,7 +29,7 @@ To manually attach husky to your project, add the below code to one of your proj
    <!-- Update this to the relative path from your project to the repo root -->
    <HuskyRoot Condition="'$(HuskyRoot)' == ''">../../</HuskyRoot>
 </PropertyGroup>
-<Target Name="husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0"
+<Target Name="Husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0"
         Inputs="$(HuskyRoot).config/dotnet-tools.json"
         Outputs="$(HuskyRoot).husky/_/install.stamp">
    <Exec Command="dotnet tool restore"  StandardOutputImportance="Low" StandardErrorImportance="High"/>
@@ -64,7 +64,7 @@ to avoid this, you can add the `$(IsCrossTargetingBuild)' == 'true'` condition t
 e.g
 
 ``` xml:no-line-numbers:no-v-pre
-<Target Name="husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0 and '$(IsCrossTargetingBuild)' == 'true'">
+<Target Name="Husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0 and '$(IsCrossTargetingBuild)' == 'true'">
 ...
 ```
 

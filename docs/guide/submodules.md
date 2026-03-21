@@ -38,7 +38,7 @@ The generated block will look something like this, If you're attaching husky man
    <!-- Update this to the relative path from your project to the repo root -->
    <HuskyRoot Condition="'$(HuskyRoot)' == ''">../../</HuskyRoot>
 </PropertyGroup>
-<Target Name="husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0  and '$(IgnoreSubmodule)' != 0"
+<Target Name="Husky" AfterTargets="Restore" Condition="'$(HUSKY)' != 0  and '$(IgnoreSubmodule)' != 0"
         Inputs="$(HuskyRoot).config/dotnet-tools.json"
         Outputs="$(HuskyRoot).husky/_/install.stamp">
    <Exec Command="dotnet tool restore"  StandardOutputImportance="Low" StandardErrorImportance="High"/>

@@ -47,14 +47,22 @@ public class AttachCommand : CommandBase
       }
 
       // Remove existing husky elements to avoid duplicates
-      doc.Descendants("Target")
+      foreach (var target in doc.Descendants("Target")
          .Where(q => q.Attribute("Name")?.Value.Equals("Husky", StringComparison.InvariantCultureIgnoreCase) ?? false)
-         .ToList()
-         .ForEach(e => e.Remove());
-      doc.Descendants("PropertyGroup")
-         .Where(pg => pg.Descendants("HuskyRoot").Any())
-         .ToList()
-         .ForEach(e => e.Remove());
+         .ToList())
+      {
+         target.Remove();
+      }
+
+      foreach (var huskyRoot in doc.Descendants("HuskyRoot").ToList())
+      {
+         var pg = huskyRoot.Parent;
+         huskyRoot.Remove();
+         if (pg is { HasElements: false })
+         {
+            pg.Remove();
+         }
+      }
 
       // create husky target
       await AddHuskyTarget(doc, filepath);
