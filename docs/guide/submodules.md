@@ -45,9 +45,9 @@ The generated block will look something like this, If you're attaching husky man
          WorkingDirectory="$(HuskyRoot)" />
    <Touch Files="$(HuskyRoot).husky/_/install.stamp" AlwaysCreate="true"
           Condition="Exists('$(HuskyRoot).husky/_')" />
-   <ItemGroup>
-      <FileWrites Include="$(HuskyRoot).husky/_/install.stamp" />
-   </ItemGroup>
+</Target>
+<Target Name="HuskyClean" AfterTargets="Clean">
+   <Delete Files="$(HuskyRoot).husky/_/install.stamp" />
 </Target>
 ```
 

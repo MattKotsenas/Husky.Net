@@ -75,9 +75,9 @@
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
     <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="$(HuskyRoot)"/>
     <Touch Files="$(HuskyRoot).husky/_/install.stamp" AlwaysCreate="true" Condition="Exists('$(HuskyRoot).husky/_')" />
-    <ItemGroup>
-      <FileWrites Include="$(HuskyRoot).husky/_/install.stamp" />
-    </ItemGroup>
+  </Target>
+  <Target Name="HuskyClean" AfterTargets="Clean">
+    <Delete Files="$(HuskyRoot).husky/_/install.stamp" />
   </Target>
 
    <PropertyGroup Condition="'$(Configuration)' == 'IntegrationTest'">

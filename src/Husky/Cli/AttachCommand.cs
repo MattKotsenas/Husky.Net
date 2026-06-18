@@ -110,13 +110,19 @@ public class AttachCommand : CommandBase
       touch.SetAttributeValue("Condition", "Exists('$(HuskyRoot).husky/_')");
       target.Add(touch);
 
-      var itemGroup = new XElement("ItemGroup");
-      var fileWrites = new XElement("FileWrites");
-      fileWrites.SetAttributeValue("Include", "$(HuskyRoot).husky/_/install.stamp");
-      itemGroup.Add(fileWrites);
-      target.Add(itemGroup);
-
       doc.Add(target);
+
+      // The stamp is written from a target that runs AfterTargets="Restore", so it is
+      // never recorded in the build's FileListAbsolute.txt and `dotnet clean` cannot
+      // remove it. Delete it explicitly after Clean so the next build re-installs
+      // (e.g. after a tool version bump).
+      var cleanTarget = new XElement("Target");
+      cleanTarget.SetAttributeValue("Name", "HuskyClean");
+      cleanTarget.SetAttributeValue("AfterTargets", "Clean");
+      var delete = new XElement("Delete");
+      delete.SetAttributeValue("Files", "$(HuskyRoot).husky/_/install.stamp");
+      cleanTarget.Add(delete);
+      doc.Add(cleanTarget);
    }
 
    private string GetInstallCommand()

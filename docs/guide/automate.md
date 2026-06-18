@@ -36,9 +36,9 @@ To manually attach husky to your project, add the below code to one of your proj
          WorkingDirectory="$(HuskyRoot)" />
    <Touch Files="$(HuskyRoot).husky/_/install.stamp" AlwaysCreate="true"
           Condition="Exists('$(HuskyRoot).husky/_')" />
-   <ItemGroup>
-      <FileWrites Include="$(HuskyRoot).husky/_/install.stamp" />
-   </ItemGroup>
+</Target>
+<Target Name="HuskyClean" AfterTargets="Clean">
+   <Delete Files="$(HuskyRoot).husky/_/install.stamp" />
 </Target>
 ```
 
@@ -47,7 +47,7 @@ Update the `HuskyRoot` property value to match the relative path from your proje
 :::
 
 ::: tip
-The target skips when `.husky/_/install.stamp` exists, avoiding re-runs on every build. Running `dotnet clean` removes the stamp so the next build re-installs. If you update your tool versions, run `dotnet clean` to pick up the change.
+The `Husky` target skips when `.husky/_/install.stamp` exists, avoiding re-runs on every build. The `HuskyClean` target removes the stamp on `dotnet clean`, so the next build re-installs. If you update your tool versions, run `dotnet clean` to pick up the change.
 :::
 
 ::: tip
